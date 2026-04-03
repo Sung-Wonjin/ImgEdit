@@ -81,7 +81,7 @@ echo [3/4] Installing packages...
 "%PYTHON%" -c "import fastapi" >/dev/null 2>&1
 if errorlevel 1 (
     echo  Installing packages (first time only)...
-    "%PIP%" install --quiet -r "%BACKEND%\requirements.txt"
+    "%PYTHON%" -m pip install --quiet -r "%BACKEND%\requirements.txt"
     if errorlevel 1 (
         echo  [ERROR] pip install failed.
         goto :end
