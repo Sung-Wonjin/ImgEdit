@@ -1,7 +1,7 @@
 @echo off
 if "%1"=="run" goto :run
 
-cmd /k ""%~f0" run"
+cmd /c ""%~f0" run"
 exit /b
 
 :run
@@ -155,5 +155,5 @@ if exist "%PYTHONW%" (
 echo tray start exit code: %ERRORLEVEL% >> "%LOG%"
 
 :end
-echo.
 echo Log saved to: %LOG%
+exit /b
