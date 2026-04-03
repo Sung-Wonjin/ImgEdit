@@ -106,4 +106,6 @@ start "" cmd /c "timeout /t 2 >nul && start http://localhost:%PORT%"
 
 cd /d "%BACKEND%"
 "%PYTHON%" -m uvicorn main:app --host 0.0.0.0 --port %PORT%
-goto :eof
+echo.
+echo  Server stopped.
+pause
