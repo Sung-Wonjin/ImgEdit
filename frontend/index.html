@@ -1,12 +1,150 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ImgEdit</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImgEdit</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>ImgEdit</h1>
+  </header>
+
+  <main>
+    <!-- 좌측: 트리 탐색기 -->
+    <aside id="tree-sidebar" class="hidden">
+      <!-- 경로 입력 -->
+      <div id="folder-section">
+        <div class="folder-row">
+          <input type="text" id="folder-input" placeholder="경로 입력" />
+          <button id="browse-btn">탐색</button>
+        </div>
+        <p id="folder-error" class="error-msg hidden"></p>
+      </div>
+      <div id="tree-root"></div>
+    </aside>
+
+    <!-- 우측: 콘텐츠 영역 -->
+    <div id="content-area">
+
+      <!-- 탐색기 미열림 초기 화면 -->
+      <div id="initial-section">
+        <div class="folder-row">
+          <input type="text" id="folder-input-init" placeholder="폴더 경로 입력 (예: /mnt/d/photos)" />
+          <button id="browse-btn-init">탐색</button>
+          <button id="load-btn">이미지 불러오기</button>
+        </div>
+        <p id="folder-error-init" class="error-msg hidden"></p>
+        <p class="empty-msg" style="margin-top:40px">폴더 경로를 입력하거나 탐색 버튼으로 디렉토리를 선택하세요.</p>
+      </div>
+
+      <!-- 갤러리 -->
+      <section id="gallery-section" class="hidden">
+        <div class="gallery-toolbar">
+          <button id="load-btn-gallery">↺ 새로고침</button>
+          <span id="gallery-path"></span>
+        </div>
+        <p id="gallery-empty" class="empty-msg hidden">이미지가 없습니다.</p>
+        <div id="gallery-grid"></div>
+      </section>
+
+      <!-- 에디터 -->
+      <section id="editor-section" class="hidden">
+        <div class="editor-toolbar">
+          <button id="back-btn">← 갤러리로</button>
+          <span id="editor-filename"></span>
+        </div>
+        <div class="editor-body">
+          <div class="canvas-area">
+            <div id="canvas-spinner" class="spinner hidden"></div>
+            <canvas id="editor-canvas"></canvas>
+          </div>
+          <aside class="editor-controls">
+            <!-- 실행취소 / 초기화 -->
+            <div class="control-section">
+              <div class="btn-row">
+                <button id="undo-btn" title="실행 취소 (Ctrl+Z)">↩ 실행취소</button>
+                <button id="reset-btn">↺ 초기화</button>
+              </div>
+            </div>
+
+            <!-- 회전 / 뒤집기 -->
+            <div class="control-section">
+              <h3>변형</h3>
+              <div class="btn-row">
+                <button id="rotate-left">↺ -90°</button>
+                <button id="rotate-right">↻ +90°</button>
+              </div>
+              <div class="btn-row" style="margin-top:6px">
+                <button id="flip-h">↔ 좌우반전</button>
+                <button id="flip-v">↕ 상하반전</button>
+              </div>
+            </div>
+
+            <!-- 밝기 -->
+            <div class="control-section">
+              <h3>밝기 <span id="brightness-val">100</span>%</h3>
+              <input type="range" id="brightness" min="20" max="200" value="100" title="더블클릭으로 초기화" />
+            </div>
+            <!-- 대비 -->
+            <div class="control-section">
+              <h3>대비 <span id="contrast-val">100</span>%</h3>
+              <input type="range" id="contrast" min="20" max="200" value="100" title="더블클릭으로 초기화" />
+            </div>
+            <!-- 채도 -->
+            <div class="control-section">
+              <h3>채도 <span id="saturation-val">100</span>%</h3>
+              <input type="range" id="saturation" min="0" max="300" value="100" title="더블클릭으로 초기화" />
+            </div>
+            <!-- 색온도 -->
+            <div class="control-section">
+              <h3>색온도 <span id="warmth-val">0</span></h3>
+              <input type="range" id="warmth" min="-100" max="100" value="0" title="더블클릭으로 초기화" />
+            </div>
+            <!-- 선명도 -->
+            <div class="control-section">
+              <h3>선명도 <span id="sharpness-val">0</span></h3>
+              <input type="range" id="sharpness" min="0" max="10" value="0" step="1" title="더블클릭으로 초기화" />
+            </div>
+            <!-- 블러 -->
+            <div class="control-section">
+              <h3>블러 <span id="blur-val">0</span>px</h3>
+              <input type="range" id="blur" min="0" max="20" value="0" step="1" title="더블클릭으로 초기화" />
+            </div>
+            <!-- 비네팅 -->
+            <div class="control-section">
+              <h3>비네팅 <span id="vignette-val">0</span></h3>
+              <input type="range" id="vignette" min="-100" max="100" value="0" title="더블클릭으로 초기화" />
+            </div>
+            <!-- 흑백 -->
+            <div class="control-section">
+              <h3>흑백 <span id="grayscale-val">0</span>%</h3>
+              <input type="range" id="grayscale" min="0" max="100" value="0" title="더블클릭으로 초기화" />
+            </div>
+
+            <!-- 자르기 -->
+            <div class="control-section">
+              <h3>자르기</h3>
+              <button id="crop-toggle">✂ 자르기 모드</button>
+              <button id="crop-apply" class="hidden">적용</button>
+            </div>
+
+            <!-- 저장 -->
+            <div class="control-section">
+            <div class="control-section save-section">
+              <button id="save-btn">다른 이름으로 저장</button>
+              <button id="overwrite-btn">원본 덮어쓰기</button>
+              <p id="save-msg" class="save-msg hidden"></p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
 </html>

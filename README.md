@@ -6,60 +6,65 @@
 
 | 구분 | 기술 |
 |------|------|
-| Backend | Python 3.10+, FastAPI, Pillow |
-| Frontend | React, Canvas API |
+| Backend | Python 3.11+, FastAPI, Pillow |
+| Frontend | Vanilla JS, Canvas API |
 | 통신 | REST API (JSON) |
+
+## 실행 방법 (Windows)
+
+### 간편 실행 (권장)
+```
+start.bat 더블클릭
+```
+- Python 미설치 시 자동 설치 (winget 또는 공식 인스톨러)
+- 가상환경 자동 생성 및 패키지 설치 (최초 1회)
+- 서버 시작 후 브라우저 자동 오픈
+
+### 서버 종료
+```
+stop.bat 더블클릭
+```
+
+### 수동 실행
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
 
 ## 주요 기능
 
-- 로컬 폴더 경로 입력 → 이미지 목록 불러오기
+- 디렉토리 트리 탐색기 (좌측 사이드바)
 - 썸네일 갤러리 뷰
 - Canvas 기반 이미지 에디터
-  - 회전 (Rotate)
+  - 클릭/휠 줌 (커서 위치 기준)
+  - 회전, 좌우/상하 반전
+  - 밝기, 대비, 채도, 색온도
+  - 선명도, 블러, 비네팅, 흑백
   - 자르기 (Crop)
-  - 밝기 / 대비 조절
-  - 리사이즈
+  - 실행 취소 (Ctrl+Z, 최대 10단계)
 - 편집 결과 저장 (원본 덮어쓰기 / 별도 저장)
 
 ## 프로젝트 구조
 
 ```
 personal_proj/
+├── start.bat            # Windows 실행 스크립트
+├── stop.bat             # 서버 종료 스크립트
 ├── backend/
-│   ├── main.py              # FastAPI 앱 진입점
+│   ├── main.py          # FastAPI 앱
 │   ├── routers/
-│   │   ├── images.py        # 이미지 목록/조회 API
-│   │   └── editor.py        # 이미지 편집 API (Pillow)
+│   │   ├── images.py    # 이미지 목록/조회/탐색 API
+│   │   └── editor.py    # 이미지 편집 API (Pillow)
 │   └── requirements.txt
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── FolderPicker.jsx   # 폴더 경로 입력
-│   │   │   ├── ImageGallery.jsx   # 썸네일 갤러리
-│   │   │   └── ImageEditor.jsx    # Canvas 에디터
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── package.json
-│   └── vite.config.js
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
 └── docs/
-    └── api.md               # API 명세
-```
-
-## 실행 방법
-
-### Backend
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-# http://localhost:5173 접속
+    └── api.md
 ```
 
 ## API 엔드포인트

@@ -1,9 +1,10 @@
 import os
+import io
 import uuid
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import FileResponse
-from PIL import Image
+from fastapi.responses import FileResponse, StreamingResponse
+from PIL import Image, ImageOps
 
 router = APIRouter()
 
@@ -22,8 +23,65 @@ def _get_image_id(path: str) -> str:
     return img_id
 
 
+@router.get("/browse")
+def browse(folder: str = Query(..., description="탐색할 폴더 경로")):
+    # WSL 환경에서 Windows 경로(C:\...) 가 넘어올 경우 변환
+    folder = folder.replace("\\", "/")
+    folder_path = Path(folder)
+    if not folder_path.exists() or not folder_path.is_dir():
+        raise HTTPException(status_code=404, detail="폴더를 찾을 수 없습니다.")
+
+    dirs, files = [], []
+    try:
+        entries = sorted(
+            folder_path.iterdir(),
+            key=lambda p: (p.is_file(), p.name.lower())
+        )
+    except PermissionError:
+        raise HTTPException(status_code=403, detail="접근 권한이 없습니다.")
+
+    for entry in entries:
+        try:
+            name = entry.name  # Path는 내부적으로 UTF-8 str 사용
+            if entry.is_dir():
+                dirs.append({"name": name, "path": str(entry)})
+            elif entry.suffix.lower() in SUPPORTED_EXTENSIONS:
+                files.append({"name": name, "path": str(entry)})
+        except (PermissionError, UnicodeDecodeError):
+            continue
+
+    parent = str(folder_path.parent) if folder_path.parent != folder_path else None
+    parts = []
+    p = folder_path
+    while True:
+        parts.insert(0, {"name": p.name or str(p), "path": str(p)})
+        if p.parent == p:
+            break
+        p = p.parent
+
+    # 이미지 파일에 UUID id 부여
+    image_items = []
+    for f in files:
+        img_id = _get_image_id(f["path"])
+        image_items.append({
+            "id": img_id,
+            "filename": f["name"],
+            "path": f["path"],
+        })
+
+    return {
+        "current": str(folder_path),
+        "parent": parent,
+        "breadcrumbs": parts,
+        "dirs": dirs,
+        "image_count": len(image_items),
+        "images": image_items,
+    }
+
+
 @router.get("")
 def list_images(folder: str = Query(..., description="이미지 폴더 경로")):
+    folder = folder.replace("\\", "/")
     folder_path = Path(folder)
     if not folder_path.exists() or not folder_path.is_dir():
         raise HTTPException(status_code=404, detail="폴더를 찾을 수 없습니다.")
@@ -51,12 +109,25 @@ def list_images(folder: str = Query(..., description="이미지 폴더 경로"))
     return {"folder": str(folder_path), "images": images}
 
 
+def _open_with_exif(path: str) -> Image.Image:
+    img = Image.open(path)
+    return ImageOps.exif_transpose(img)
+
+
 @router.get("/{image_id}")
 def get_image(image_id: str):
     path = _image_cache.get(image_id)
     if not path or not os.path.exists(path):
         raise HTTPException(status_code=404, detail="이미지를 찾을 수 없습니다.")
-    return FileResponse(path)
+
+    img = _open_with_exif(path)
+    fmt = Path(path).suffix.lstrip(".").upper() or "JPEG"
+    if fmt == "JPG":
+        fmt = "JPEG"
+    buf = io.BytesIO()
+    img.save(buf, format=fmt)
+    buf.seek(0)
+    return StreamingResponse(buf, media_type=f"image/{fmt.lower()}")
 
 
 @router.get("/{image_id}/thumbnail")
@@ -65,14 +136,12 @@ def get_thumbnail(image_id: str, size: int = Query(200)):
     if not path or not os.path.exists(path):
         raise HTTPException(status_code=404, detail="이미지를 찾을 수 없습니다.")
 
-    img = Image.open(path)
+    img = _open_with_exif(path)
     img.thumbnail((size, size))
-
-    import io
+    fmt = Path(path).suffix.lstrip(".").upper() or "JPEG"
+    if fmt == "JPG":
+        fmt = "JPEG"
     buf = io.BytesIO()
-    fmt = img.format or "JPEG"
     img.save(buf, format=fmt)
     buf.seek(0)
-
-    from fastapi.responses import StreamingResponse
     return StreamingResponse(buf, media_type=f"image/{fmt.lower()}")
