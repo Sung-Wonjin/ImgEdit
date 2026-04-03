@@ -1,0 +1,141 @@
+.editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 130px);
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.btn-back {
+  padding: 8px 14px;
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+
+.btn-back:hover {
+  border-color: #e94560;
+}
+
+.editor-filename {
+  font-size: 0.95rem;
+  color: #aaa;
+}
+
+.editor-body {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.canvas-area {
+  flex: 1;
+  background: #0d0d1a;
+  border-radius: 8px;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.editor-canvas.crop-cursor {
+  cursor: crosshair;
+}
+
+.editor-controls {
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.control-section h3 {
+  font-size: 0.8rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  padding: 8px 12px;
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 0.875rem;
+  transition: background 0.2s, border-color 0.2s;
+  width: 100%;
+}
+
+.btn:hover {
+  border-color: #e94560;
+}
+
+.btn-active {
+  border-color: #e94560;
+  background: #2a1020;
+}
+
+.btn-apply {
+  margin-top: 6px;
+  background: #e94560;
+  border-color: #e94560;
+  color: #fff;
+}
+
+.btn-apply:hover {
+  background: #c73652;
+}
+
+input[type='range'] {
+  width: 100%;
+  accent-color: #e94560;
+}
+
+.save-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.btn-save {
+  background: #0f3460;
+}
+
+.btn-overwrite {
+  background: #6b1a1a;
+  border-color: #9b2b2b;
+}
+
+.btn-overwrite:hover {
+  border-color: #e94560;
+}
+
+.save-msg {
+  font-size: 0.8rem;
+  color: #7ecb7e;
+  word-break: break-all;
+}
