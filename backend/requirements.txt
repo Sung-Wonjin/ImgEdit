@@ -5,3 +5,4 @@ httptools==0.6.1
 pillow==10.4.0
 python-multipart==0.0.9
 aiofiles==23.2.1
+pystray==0.19.5
